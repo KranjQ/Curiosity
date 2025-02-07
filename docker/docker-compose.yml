@@ -1,0 +1,46 @@
+services:
+  service-graphql:
+    image: graphql-service
+    container_name: graphql-service
+    depends_on:
+      curiosity-postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    networks:
+      - Curiosity-network
+
+
+
+
+  curiosity-postgres:
+    image: postgres:latest
+    container_name: curiosity-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: [
+        "CMD", "pg_isready",
+        "--dbname", "curiosityDB",
+        "--host", "curiosity-postgres",
+        "--port", "5432",
+        "--username", "reufee"
+      ]
+      timeout: 2s
+      retries: 2
+      start_period: "3s"
+    ports:
+      - "5432:5432"
+    networks:
+      - Curiosity-network
+
+
+networks:
+  Curiosity-network:
+    name: Curiosity-network
+    driver: bridge
