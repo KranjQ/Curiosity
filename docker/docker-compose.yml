@@ -38,6 +38,10 @@ services:
       - "5432:5432"
     networks:
       - Curiosity-network
+    volumes:
+      - ~/postgresdata:/var/lib/postgresql/data
+      - ../db/sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
 
 
 networks:

@@ -1,8 +1,6 @@
 package utils
 
-import (
-	"os"
-)
+import "os"
 
 func GetConnectUrl() (string, error) {
 	user := os.Getenv("POSTGRES_USER")
@@ -15,3 +13,10 @@ func GetConnectUrl() (string, error) {
 		" dbname=" + dbname + " sslmode=" + sslmode
 	return connStr, nil
 }
+
+//debug
+//func GetConnectUrl() (string, error) {
+//	connStr := "host=" + "localhost" + " port=" + "5432" + " user=" + "reufee" + " password=" + "curiosity" +
+//		" dbname=" + "curiosityDB" + " sslmode=" + "disable"
+//	return connStr, nil
+//}

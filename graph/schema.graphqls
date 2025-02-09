@@ -1,22 +1,48 @@
 
 
 type Post {
-    id: ID!
+    id: Int!
     title: String!
     content: String!
+    is_commentable: Boolean!
+}
+
+type Comment {
+    id: Int!
+    author: Int!
+    message: String!
+    post: Int!
+    parent: Int!
+    depth: Int!
+    path: String!
+    replies: Int!
+    created_at: String!
+}
+
+type CommentNode {
+    comment: Comment!
+    children: [CommentNode!]!
 }
 
 input NewPost {
     title: String!
     content: String!
 }
+input NewComment {
+    message: String!
+    post: Int!
+    parent: Int!
+}
 
 type Query {
     posts: [Post!]!
+    postComments(postID: Int!): [Comment!]!
+    replyComments(rootID: Int!): [Comment!]!
 }
 
 type Mutation {
-    createPost(input: NewPost!): Post!
+    createPost(input: NewPost!): Post
+    createComment(input: NewComment!): Comment!
 }
 
 

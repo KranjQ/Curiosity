@@ -2,7 +2,30 @@
 
 package model
 
+type Comment struct {
+	ID        int32  `json:"id"`
+	Author    int32  `json:"author"`
+	Message   string `json:"message"`
+	Post      int32  `json:"post"`
+	Parent    int32  `json:"parent"`
+	Depth     int32  `json:"depth"`
+	Path      string `json:"path"`
+	Replies   int32  `json:"replies"`
+	CreatedAt string `json:"created_at"`
+}
+
+type CommentNode struct {
+	Comment  *Comment       `json:"comment"`
+	Children []*CommentNode `json:"children"`
+}
+
 type Mutation struct {
+}
+
+type NewComment struct {
+	Message string `json:"message"`
+	Post    int32  `json:"post"`
+	Parent  int32  `json:"parent"`
 }
 
 type NewPost struct {
@@ -11,9 +34,10 @@ type NewPost struct {
 }
 
 type Post struct {
-	ID      string `json:"id"`
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	ID            int32  `json:"id"`
+	Title         string `json:"title"`
+	Content       string `json:"content"`
+	IsCommentable bool   `json:"is_commentable"`
 }
 
 type Query struct {

@@ -7,17 +7,90 @@ package graph
 import (
 	"context"
 	"curiosity/graph/model"
+	"curiosity/internal/models"
+	"encoding/json"
 	"fmt"
 )
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented: CreatePost - createPost"))
+	post := models.Post{
+		Title:         input.Title,
+		Content:       input.Content,
+		IsCommentable: false,
+	}
+	if err := r.postUseCase.CreatePost(ctx, post); err != nil {
+		return nil, fmt.Errorf("CreatePost error: %w", err)
+	}
+	return nil, nil
+}
+
+// CreateComment is the resolver for the createComment field.
+func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*model.Comment, error) {
+	comment := models.Comment{
+		Message: input.Message,
+		Post:    int(input.Post),
+		Parent:  int(input.Parent),
+	}
+	if err := r.commentUseCase.CreateComment(ctx, comment); err != nil {
+		return nil, fmt.Errorf("Create Comment error: %w", err)
+	}
+	return nil, nil
 }
 
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
+	var gqlPosts []*model.Post
+	posts, err := r.postUseCase.GetPosts(ctx)
+	if err != nil {
+		return nil, nil
+	}
+	for _, pp := range posts {
+		gqlPost := &model.Post{
+			ID:            int32(pp.ID),
+			Title:         pp.Title,
+			Content:       pp.Content,
+			IsCommentable: pp.IsCommentable,
+		}
+		gqlPosts = append(gqlPosts, gqlPost)
+	}
+	return gqlPosts, nil
+}
+
+// PostComments is the resolver for the postComments field.
+func (r *queryResolver) PostComments(ctx context.Context, postID int32) ([]*model.Comment, error) {
+	var gqlComments []*model.Comment
+	comments, err := r.commentUseCase.GetCommentsByPostID(ctx, int(postID), 10, 0)
+	if err != nil {
+		return nil, fmt.Errorf("PostComments error: %w", err)
+	}
+	jsonData, err := json.Marshal(comments)
+	if err != nil {
+		return nil, fmt.Errorf("bad marshaling comments error: %w", err)
+	}
+	err = json.Unmarshal(jsonData, &gqlComments)
+	if err != nil {
+		return nil, fmt.Errorf("bad unmarshaling comments error: %w", err)
+	}
+	return gqlComments, nil
+}
+
+// ReplyComments is the resolver for the replyComments field.
+func (r *queryResolver) ReplyComments(ctx context.Context, rootID int32) ([]*model.Comment, error) {
+	var gqlComments []*model.Comment
+	comments, err := r.commentUseCase.GetRepliesByCommentID(ctx, int(rootID))
+	if err != nil {
+		return nil, fmt.Errorf("PostComments error: %w", err)
+	}
+	jsonData, err := json.Marshal(comments)
+	if err != nil {
+		return nil, fmt.Errorf("bad marshaling comments error: %w", err)
+	}
+	err = json.Unmarshal(jsonData, &gqlComments)
+	if err != nil {
+		return nil, fmt.Errorf("bad unmarshaling comments error: %w", err)
+	}
+	return gqlComments, nil
 }
 
 // Mutation returns MutationResolver implementation.
