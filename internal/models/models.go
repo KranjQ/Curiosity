@@ -23,6 +23,12 @@ type Comment struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type User struct {
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Node struct {
 	Comment  *Comment `json:"comment"`
 	Children []*Node  `json:"children"`

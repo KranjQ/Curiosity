@@ -66,11 +66,13 @@ func main() {
 
 	postRepo := repo.NewPostRepository(db)
 	commentRepo := repo.NewCommentRepository(db)
+	userRepo := repo.NewUserRepository(db)
 
 	postUseCase := usecase.NewPostUseCase(postRepo)
-	commentUseCase := usecase.NewCommentUseCase(commentRepo)
+	commentUseCase := usecase.NewCommentUseCase(commentRepo, postRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo)
 
-	resolver := graph.NewResolver(postUseCase, commentUseCase, logger)
+	resolver := graph.NewResolver(postUseCase, commentUseCase, userUseCase, logger)
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 

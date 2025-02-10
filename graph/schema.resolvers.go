@@ -38,6 +38,40 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	return nil, nil
 }
 
+// RegisterUser is the resolver for the registerUser field.
+func (r *mutationResolver) RegisterUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+	user := models.User{
+		Username: input.Username,
+		Password: input.Password,
+	}
+	result, err := r.userUseCase.RegisterUser(ctx, user)
+	if err != nil {
+		return nil, fmt.Errorf("RegisterUser error: %w", err)
+	}
+
+	glUser := &model.User{
+		ID:       int32(result.ID),
+		Username: result.Username,
+		Password: result.Password,
+	}
+
+	return glUser, err
+}
+
+// SignIn is the resolver for the signIn field.
+func (r *mutationResolver) SignIn(ctx context.Context, input model.NewUser) (int32, error) {
+	user := models.User{
+		Username: input.Username,
+		Password: input.Password,
+	}
+	id, err := r.userUseCase.SignIn(ctx, user)
+	if err != nil {
+		return -1, fmt.Errorf("Bad Sign In error: %w", err)
+	}
+
+	return int32(id), nil
+}
+
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 	var gqlPosts []*model.Post
@@ -58,9 +92,9 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 }
 
 // PostComments is the resolver for the postComments field.
-func (r *queryResolver) PostComments(ctx context.Context, postID int32) ([]*model.Comment, error) {
+func (r *queryResolver) PostComments(ctx context.Context, postID int32, limit int32, offset int32) ([]*model.Comment, error) {
 	var gqlComments []*model.Comment
-	comments, err := r.commentUseCase.GetCommentsByPostID(ctx, int(postID), 10, 0)
+	comments, err := r.commentUseCase.GetCommentsByPostID(ctx, int(postID), int(limit), int(offset))
 	if err != nil {
 		return nil, fmt.Errorf("PostComments error: %w", err)
 	}

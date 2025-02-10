@@ -26,16 +26,23 @@ type PostUseCase interface {
 	GetPosts(ctx context.Context) ([]*models.Post, error)
 }
 
+type UserUseCase interface {
+	RegisterUser(ctx context.Context, user models.User) (*models.User, error)
+	SignIn(ctx context.Context, user models.User) (int, error)
+}
+
 type Resolver struct {
 	commentUseCase CommentUseCase
 	postUseCase    PostUseCase
+	userUseCase    UserUseCase
 	logger         *zap.Logger
 }
 
-func NewResolver(pu PostUseCase, cu CommentUseCase, logger *zap.Logger) *Resolver {
+func NewResolver(pu PostUseCase, cu CommentUseCase, uu UserUseCase, logger *zap.Logger) *Resolver {
 	return &Resolver{
 		commentUseCase: cu,
 		postUseCase:    pu,
+		userUseCase:    uu,
 		logger:         logger,
 	}
 }

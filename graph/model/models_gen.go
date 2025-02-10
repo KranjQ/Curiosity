@@ -33,6 +33,11 @@ type NewPost struct {
 	Content string `json:"content"`
 }
 
+type NewUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Post struct {
 	ID            int32  `json:"id"`
 	Title         string `json:"title"`
@@ -41,4 +46,10 @@ type Post struct {
 }
 
 type Query struct {
+}
+
+type User struct {
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

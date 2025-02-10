@@ -1,5 +1,3 @@
-
-
 type Post {
     id: Int!
     title: String!
@@ -19,6 +17,12 @@ type Comment {
     created_at: String!
 }
 
+type User {
+    id: Int!,
+    username: String!,
+    password: String!
+}
+
 type CommentNode {
     comment: Comment!
     children: [CommentNode!]!
@@ -34,15 +38,22 @@ input NewComment {
     parent: Int!
 }
 
+input NewUser {
+    username: String!
+    password: String!
+}
+
 type Query {
     posts: [Post!]!
-    postComments(postID: Int!): [Comment!]!
+    postComments(postID: Int!, limit: Int!, offset: Int!): [Comment!]!
     replyComments(rootID: Int!): [Comment!]!
 }
 
 type Mutation {
     createPost(input: NewPost!): Post
     createComment(input: NewComment!): Comment!
+    registerUser(input: NewUser!): User
+    signIn(input: NewUser!): Int!
 }
 
 

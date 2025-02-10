@@ -14,15 +14,30 @@ type CommentRepository interface {
 	GetRepliesByCommentID(ctx context.Context, commentID int) ([]*models.Comment, error)
 }
 
-type CommentUseCase struct {
-	repo CommentRepository
+type CPostRepository interface {
+	GetPostByID(ctx context.Context, postID int) (*models.Post, error)
 }
 
-func NewCommentUseCase(repo CommentRepository) *CommentUseCase {
-	return &CommentUseCase{repo: repo}
+type CommentUseCase struct {
+	commentRepo CommentRepository
+	postRepo    PostRepository
+}
+
+func NewCommentUseCase(cr CommentRepository, pr PostRepository) *CommentUseCase {
+	return &CommentUseCase{
+		commentRepo: cr,
+		postRepo:    pr,
+	}
 }
 
 func (uc *CommentUseCase) CreateComment(ctx context.Context, comment models.Comment) error {
+	post, err := uc.postRepo.GetPostByID(ctx, comment.Post)
+	if err != nil {
+		return fmt.Errorf("bad GetPostByID error: %w", err)
+	}
+	if !post.IsCommentable {
+		return fmt.Errorf("Post is not commentable, PostID: %d", post.ID)
+	}
 	if comment.Parent != -1 {
 		parent, err := uc.GetCommentByID(ctx, comment.Parent)
 		if err != nil {
@@ -41,14 +56,14 @@ func (uc *CommentUseCase) CreateComment(ctx context.Context, comment models.Comm
 
 	comment.Author = 1
 
-	if err := uc.repo.CreateComment(ctx, comment); err != nil {
+	if err := uc.commentRepo.CreateComment(ctx, comment); err != nil {
 		return fmt.Errorf("CreateComment error: %w", err)
 	}
 	return nil
 }
 
 func (uc *CommentUseCase) GetCommentByID(ctx context.Context, id int) (*models.Comment, error) {
-	comment, err := uc.repo.GetCommentByID(ctx, id)
+	comment, err := uc.commentRepo.GetCommentByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("GetCommentByID error: %w", err)
 	}
@@ -56,7 +71,7 @@ func (uc *CommentUseCase) GetCommentByID(ctx context.Context, id int) (*models.C
 }
 
 func (uc *CommentUseCase) GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]*models.Comment, error) {
-	comments, err := uc.repo.GetCommentsByPostID(ctx, postID, limit, offset)
+	comments, err := uc.commentRepo.GetCommentsByPostID(ctx, postID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("bad repo GetCommentsByPostID: %w", err)
 	}
@@ -64,7 +79,7 @@ func (uc *CommentUseCase) GetCommentsByPostID(ctx context.Context, postID int, l
 }
 
 func (uc *CommentUseCase) GetRepliesByCommentID(ctx context.Context, commentID int) ([]*models.Comment, error) {
-	comments, err := uc.repo.GetRepliesByCommentID(ctx, commentID)
+	comments, err := uc.commentRepo.GetRepliesByCommentID(ctx, commentID)
 	if err != nil {
 		return nil, fmt.Errorf("bad repo GetCommentsByPostID: %w", err)
 	}
