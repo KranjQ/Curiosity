@@ -1,4 +1,4 @@
-package repo
+package psql
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func TestCreatePost(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := NewRepository(db)
+	repo := NewPostRepository(db)
 
 	tests := []struct {
 		name    string
@@ -60,7 +60,7 @@ func TestGetPosts(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := NewRepository(db)
+	repo := NewPostRepository(db)
 
 	tests := []struct {
 		name       string
@@ -94,3 +94,9 @@ func TestGetPosts(t *testing.T) {
 		})
 	}
 }
+
+//func TestPostByID(t *testing.T) {
+//	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+//	defer cancel()
+//
+//}

@@ -5,6 +5,8 @@ services:
     depends_on:
       curiosity-postgres:
         condition: service_healthy
+    environment:
+      STORAGE_TYPE: ${STORAGE_TYPE}
     env_file:
       - .env
     ports:

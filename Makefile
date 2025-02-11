@@ -1,6 +1,8 @@
 SERVER_BINARY=graphql
 DOCKER_DIR=docker
 
+STORAGE_TYPE?=PSQL
+
 build-graphql:
 	go build -o ${SERVER_BINARY} ./cmd/main
 
@@ -17,7 +19,7 @@ graphql-service-image:
 curiosity-run:
 	make builder-image
 	make graphql-service-image
-	docker-compose -f ${DOCKER_DIR}/docker-compose.yml up -d
+	STORAGE_TYPE=${STORAGE_TYPE} docker-compose -f ${DOCKER_DIR}/docker-compose.yml up -d
 
 .PHONY: curiosity-down
 curiosity-down:

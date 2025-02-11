@@ -1,4 +1,4 @@
-package repo
+package psql
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func (repo *PostRepository) CreatePost(ctx context.Context, post models.Post) er
 	return nil
 }
 
-func (repo *PostRepository) GetPosts(ctx context.Context) ([]*models.Post, error) {
+func (repo *PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
 	query := "SELECT id, title, content, author, is_commentable, created_at FROM posts"
 
 	rows, err := repo.DB.QueryContext(ctx, query)
@@ -35,7 +35,7 @@ func (repo *PostRepository) GetPosts(ctx context.Context) ([]*models.Post, error
 	}
 	defer rows.Close()
 
-	var posts []*models.Post
+	var posts []models.Post
 
 	for rows.Next() {
 		var post models.Post
@@ -43,18 +43,18 @@ func (repo *PostRepository) GetPosts(ctx context.Context) ([]*models.Post, error
 			&post.Author, &post.IsCommentable, &post.CreatedAt); err != nil {
 			return nil, fmt.Errorf("bad scan in get posts: %w", err)
 		}
-		posts = append(posts, &post)
+		posts = append(posts, post)
 	}
 	return posts, nil
 }
 
-func (repo *PostRepository) GetPostByID(ctx context.Context, postID int) (*models.Post, error) {
+func (repo *PostRepository) GetPostByID(ctx context.Context, postID int) (models.Post, error) {
 	var post models.Post
 	query := "SELECT id, title, content, author, is_commentable, created_at  FROM posts WHERE id = $1"
 	row := repo.DB.QueryRowContext(ctx, query, postID)
 	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.Author, &post.IsCommentable, &post.CreatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("bad GetPostByID: %w", err)
+		return models.Post{}, fmt.Errorf("bad GetPostByID: %w", err)
 	}
-	return &post, nil
+	return post, nil
 }

@@ -17,7 +17,8 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) 
 	post := models.Post{
 		Title:         input.Title,
 		Content:       input.Content,
-		IsCommentable: false,
+		Author:        int(input.Author),
+		IsCommentable: input.IsCommentable,
 	}
 	if err := r.postUseCase.CreatePost(ctx, post); err != nil {
 		return nil, fmt.Errorf("CreatePost error: %w", err)
@@ -31,6 +32,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 		Message: input.Message,
 		Post:    int(input.Post),
 		Parent:  int(input.Parent),
+		Author:  int(input.Author),
 	}
 	if err := r.commentUseCase.CreateComment(ctx, comment); err != nil {
 		return nil, fmt.Errorf("Create Comment error: %w", err)
@@ -38,24 +40,18 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	return nil, nil
 }
 
-// RegisterUser is the resolver for the registerUser field.
-func (r *mutationResolver) RegisterUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+// SignUp is the resolver for the signUp field.
+func (r *mutationResolver) SignUp(ctx context.Context, input model.NewUser) (int32, error) {
 	user := models.User{
 		Username: input.Username,
 		Password: input.Password,
 	}
 	result, err := r.userUseCase.RegisterUser(ctx, user)
 	if err != nil {
-		return nil, fmt.Errorf("RegisterUser error: %w", err)
+		return -1, fmt.Errorf("RegisterUser error: %w", err)
 	}
 
-	glUser := &model.User{
-		ID:       int32(result.ID),
-		Username: result.Username,
-		Password: result.Password,
-	}
-
-	return glUser, err
+	return int32(result), nil
 }
 
 // SignIn is the resolver for the signIn field.
@@ -82,6 +78,7 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 	for _, pp := range posts {
 		gqlPost := &model.Post{
 			ID:            int32(pp.ID),
+			Author:        int32(pp.Author),
 			Title:         pp.Title,
 			Content:       pp.Content,
 			IsCommentable: pp.IsCommentable,

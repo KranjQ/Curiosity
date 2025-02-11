@@ -26,11 +26,14 @@ type NewComment struct {
 	Message string `json:"message"`
 	Post    int32  `json:"post"`
 	Parent  int32  `json:"parent"`
+	Author  int32  `json:"author"`
 }
 
 type NewPost struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title         string `json:"title"`
+	Content       string `json:"content"`
+	Author        int32  `json:"author"`
+	IsCommentable bool   `json:"is_commentable"`
 }
 
 type NewUser struct {
@@ -40,6 +43,7 @@ type NewUser struct {
 
 type Post struct {
 	ID            int32  `json:"id"`
+	Author        int32  `json:"author"`
 	Title         string `json:"title"`
 	Content       string `json:"content"`
 	IsCommentable bool   `json:"is_commentable"`

@@ -7,8 +7,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, user models.User) (*models.User, error)
-	GetUser(ctx context.Context, user models.User) (*models.User, error)
+	CreateUser(ctx context.Context, user models.User) (int, error)
+	GetUser(ctx context.Context, user models.User) (models.User, error)
 }
 
 type UserUseCase struct {
@@ -19,12 +19,12 @@ func NewUserUseCase(repo UserRepository) *UserUseCase {
 	return &UserUseCase{repo: repo}
 }
 
-func (uc *UserUseCase) RegisterUser(ctx context.Context, user models.User) (*models.User, error) {
-	returnUser, err := uc.repo.CreateUser(ctx, user)
+func (uc *UserUseCase) RegisterUser(ctx context.Context, user models.User) (int, error) {
+	id, err := uc.repo.CreateUser(ctx, user)
 	if err != nil {
-		return nil, fmt.Errorf("create user error: %w", err)
+		return -1, fmt.Errorf("create user error: %w", err)
 	}
-	return returnUser, nil
+	return id, nil
 }
 
 func (uc *UserUseCase) SignIn(ctx context.Context, user models.User) (int, error) {

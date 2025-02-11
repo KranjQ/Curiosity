@@ -1,5 +1,6 @@
 type Post {
     id: Int!
+    author: Int!
     title: String!
     content: String!
     is_commentable: Boolean!
@@ -31,11 +32,14 @@ type CommentNode {
 input NewPost {
     title: String!
     content: String!
+    author: Int!
+    is_commentable: Boolean!
 }
 input NewComment {
     message: String!
     post: Int!
     parent: Int!
+    author: Int!
 }
 
 input NewUser {
@@ -52,7 +56,7 @@ type Query {
 type Mutation {
     createPost(input: NewPost!): Post
     createComment(input: NewComment!): Comment!
-    registerUser(input: NewUser!): User
+    signUp(input: NewUser!): Int!
     signIn(input: NewUser!): Int!
 }
 

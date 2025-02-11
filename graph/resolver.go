@@ -14,20 +14,20 @@ import (
 
 type CommentUseCase interface {
 	CreateComment(ctx context.Context, comment models.Comment) error
-	GetCommentByID(ctx context.Context, id int) (*models.Comment, error)
+	GetCommentByID(ctx context.Context, id int) (models.Comment, error)
 	//GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]*models.Node, error)
-	GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]*models.Comment, error)
-	GetRepliesByCommentID(ctx context.Context, commentID int) ([]*models.Comment, error)
+	GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]models.Comment, error)
+	GetRepliesByCommentID(ctx context.Context, commentID int) ([]models.Comment, error)
 }
 
 type PostUseCase interface {
 	CreatePost(ctx context.Context, post models.Post) error
-	GetPostByID(ctx context.Context, postID int) (*models.Post, error)
-	GetPosts(ctx context.Context) ([]*models.Post, error)
+	GetPostByID(ctx context.Context, postID int) (models.Post, error)
+	GetPosts(ctx context.Context) ([]models.Post, error)
 }
 
 type UserUseCase interface {
-	RegisterUser(ctx context.Context, user models.User) (*models.User, error)
+	RegisterUser(ctx context.Context, user models.User) (int, error)
 	SignIn(ctx context.Context, user models.User) (int, error)
 }
 

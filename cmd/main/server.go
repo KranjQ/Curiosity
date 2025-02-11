@@ -2,7 +2,8 @@ package main
 
 import (
 	"curiosity/graph"
-	"curiosity/internal/pkg/content/repo"
+	"curiosity/internal/pkg/content/repo/inmemory"
+	"curiosity/internal/pkg/content/repo/psql"
 	"curiosity/internal/pkg/content/usecase"
 	"curiosity/internal/utils"
 	"database/sql"
@@ -64,9 +65,25 @@ func main() {
 		port = defaultPort
 	}
 
-	postRepo := repo.NewPostRepository(db)
-	commentRepo := repo.NewCommentRepository(db)
-	userRepo := repo.NewUserRepository(db)
+	storageType := os.Getenv("STORAGE_TYPE")
+	log.Print(storageType)
+
+	var postRepo usecase.PostRepository
+	var commentRepo usecase.CommentRepository
+	var userRepo usecase.UserRepository
+
+	switch storageType {
+	case "memory":
+		postRepo = inmemory.NewPostRepository()
+		commentRepo = inmemory.NewCommentRepository()
+		userRepo = inmemory.NewUserRepository()
+		log.Print("memory")
+	case "PSQL":
+		postRepo = psql.NewPostRepository(db)
+		commentRepo = psql.NewCommentRepository(db)
+		userRepo = psql.NewUserRepository(db)
+		log.Print("PSQL")
+	}
 
 	postUseCase := usecase.NewPostUseCase(postRepo)
 	commentUseCase := usecase.NewCommentUseCase(commentRepo, postRepo)
