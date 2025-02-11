@@ -5,22 +5,32 @@ import (
 	"curiosity/internal/models"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
-type CommentRepository struct {
-	comments map[int]models.Comment
-	mu       sync.RWMutex
-	counter  int
+type CommentCache interface {
+	Get(key int) (models.Comment, bool)
+	Set(key int, value models.Comment)
+	GetAll() []models.Comment
 }
 
-func NewCommentRepository() *CommentRepository {
+type CommentRepository struct {
+	//comments map[int]models.Comment
+	mu      *sync.RWMutex
+	cache   CommentCache
+	counter int
+}
+
+func NewCommentRepository(cc CommentCache) *CommentRepository {
 	return &CommentRepository{
-		comments: make(map[int]models.Comment),
-		mu:       sync.RWMutex{},
-		counter:  0,
+		//comments: make(map[int]models.Comment),
+		cache:   cc,
+		mu:      &sync.RWMutex{},
+		counter: 0,
 	}
 }
 
@@ -29,20 +39,27 @@ func (repo *CommentRepository) CreateComment(ctx context.Context, comment models
 	repo.mu.Lock()
 	repo.counter += 1
 	comment.ID = repo.counter
-	repo.comments[comment.ID] = comment
-	strSlice := strings.Split(comment.Path, ",")
+	comment.CreatedAt = time.Now()
+	//repo.comments[comment.ID] = comment
+	repo.cache.Set(comment.ID, comment)
 	var intSlice []int
-	for _, s := range strSlice {
-		num, err := strconv.Atoi(s)
-		if err != nil {
-			return fmt.Errorf("bad atoi error: %w", err)
+	if comment.Path != "" {
+		strSlice := strings.Split(comment.Path, ",")
+		for _, s := range strSlice {
+			num, err := strconv.Atoi(s)
+			if err != nil {
+				return fmt.Errorf("bad atoi error: %w", err)
+			}
+			intSlice = append(intSlice, num)
 		}
-		intSlice = append(intSlice, num)
 	}
+
 	for _, val := range intSlice {
-		temp := repo.comments[val]
+		//temp := repo.comments[val]
+		temp, _ := repo.cache.Get(val)
 		temp.Replies += 1
-		repo.comments[val] = temp
+		//repo.comments[val] = temp
+		repo.cache.Set(val, temp)
 	}
 	repo.mu.Unlock()
 	return nil
@@ -51,7 +68,8 @@ func (repo *CommentRepository) CreateComment(ctx context.Context, comment models
 func (repo *CommentRepository) GetCommentByID(ctx context.Context, commentID int) (models.Comment, error) {
 	_ = ctx
 	repo.mu.RLock()
-	comment, exists := repo.comments[commentID]
+	//comment, exists := repo.comments[commentID]
+	comment, exists := repo.cache.Get(commentID)
 	if !exists {
 		return models.Comment{}, errors.New("comment doesn't exist")
 	}
@@ -60,37 +78,45 @@ func (repo *CommentRepository) GetCommentByID(ctx context.Context, commentID int
 }
 
 func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]models.Comment, error) {
-	repo.mu.RLock()
-	var comments []models.Comment
-	limitCounter := 0
-	offsetCounter := 0
+	var filtered []models.Comment
 
-	for _, value := range repo.comments {
-		if limitCounter >= limit {
-			break
+	comments := repo.cache.GetAll()
+	slices.SortFunc(comments, func(a, b models.Comment) int {
+		if a.CreatedAt.Before(b.CreatedAt) {
+			return -1
 		}
-		for offsetCounter <= offset {
-			offsetCounter += 1
-			continue
+		if a.CreatedAt.After(b.CreatedAt) {
+			return 1
 		}
+		return 0
+	})
+
+	for _, value := range comments {
 		if value.Parent == -1 && value.Post == postID {
-			comments = append(comments, value)
-			limitCounter += 1
+			filtered = append(filtered, value)
 		}
 	}
-	repo.mu.RUnlock()
-	return comments, nil
+
+	if offset > len(filtered) {
+		return []models.Comment{}, nil
+	}
+	end := offset + limit
+	if end > len(filtered) {
+		end = len(filtered)
+	}
+
+	return filtered[offset:end], nil
 }
 
 func (repo *CommentRepository) GetRepliesByCommentID(ctx context.Context, commentID int) ([]models.Comment, error) {
 	_ = ctx
 	var replies []models.Comment
-	repo.mu.RLock()
-	for _, value := range repo.comments {
+
+	comments := repo.cache.GetAll()
+	for _, value := range comments {
 		if value.Parent == commentID {
 			replies = append(replies, value)
 		}
 	}
-	repo.mu.RUnlock()
 	return replies, nil
 }

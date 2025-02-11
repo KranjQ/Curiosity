@@ -2,6 +2,7 @@ package main
 
 import (
 	"curiosity/graph"
+	"curiosity/internal/models"
 	"curiosity/internal/pkg/content/repo/inmemory"
 	"curiosity/internal/pkg/content/repo/psql"
 	"curiosity/internal/pkg/content/usecase"
@@ -74,9 +75,12 @@ func main() {
 
 	switch storageType {
 	case "memory":
-		postRepo = inmemory.NewPostRepository()
-		commentRepo = inmemory.NewCommentRepository()
-		userRepo = inmemory.NewUserRepository()
+		postCache := utils.NewCache[int, models.Post]()
+		commentCache := utils.NewCache[int, models.Comment]()
+		userCache := utils.NewCache[string, models.User]()
+		postRepo = inmemory.NewPostRepository(postCache)
+		commentRepo = inmemory.NewCommentRepository(commentCache)
+		userRepo = inmemory.NewUserRepository(userCache)
 		log.Print("memory")
 	case "PSQL":
 		postRepo = psql.NewPostRepository(db)
