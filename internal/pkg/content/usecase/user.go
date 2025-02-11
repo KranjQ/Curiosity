@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+//go:generate mockgen -destination=./mocks/mock_userRepository.go -package=mocks . UserRepository
 type UserRepository interface {
 	CreateUser(ctx context.Context, user models.User) (int, error)
 	GetUser(ctx context.Context, user models.User) (models.User, error)

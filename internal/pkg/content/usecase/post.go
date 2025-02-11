@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+//go:generate mockgen -destination=./mocks/mock_postRepository.go -package=mocks . PostRepository
 type PostRepository interface {
 	CreatePost(ctx context.Context, post models.Post) error
 	GetPostByID(ctx context.Context, postID int) (models.Post, error)

@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+//go:generate mockgen -destination=./mocks/mock_commentRepository.go -package=mocks . CommentRepository
 type CommentRepository interface {
 	CreateComment(ctx context.Context, comment models.Comment) error
 	GetCommentByID(ctx context.Context, id int) (models.Comment, error)
@@ -14,16 +15,17 @@ type CommentRepository interface {
 	GetRepliesByCommentID(ctx context.Context, commentID int) ([]models.Comment, error)
 }
 
+//go:generate mockgen -destination=./mocks/mock_cPostRepository.go -package=mocks . CPostRepository
 type CPostRepository interface {
-	GetPostByID(ctx context.Context, postID int) (*models.Post, error)
+	GetPostByID(ctx context.Context, postID int) (models.Post, error)
 }
 
 type CommentUseCase struct {
 	commentRepo CommentRepository
-	postRepo    PostRepository
+	postRepo    CPostRepository
 }
 
-func NewCommentUseCase(cr CommentRepository, pr PostRepository) *CommentUseCase {
+func NewCommentUseCase(cr CommentRepository, pr CPostRepository) *CommentUseCase {
 	return &CommentUseCase{
 		commentRepo: cr,
 		postRepo:    pr,

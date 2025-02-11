@@ -50,10 +50,10 @@ func (repo *CommentRepository) CreateComment(ctx context.Context, comment models
 
 func (repo *CommentRepository) GetCommentByID(ctx context.Context, id int) (models.Comment, error) {
 	var comment models.Comment
-	query := "SELECT id, author, message, post, parent, depth, path FROM comments WHERE id = $1"
+	query := "SELECT id, author, message, post, parent, depth, path, replies, created_at FROM comments WHERE id = $1"
 	row := repo.DB.QueryRowContext(ctx, query, id)
 	if err := row.Scan(&comment.ID, &comment.Author, &comment.Message, &comment.Post, &comment.Parent,
-		&comment.Depth, &comment.Path); err != nil {
+		&comment.Depth, &comment.Path, &comment.Replies, &comment.CreatedAt); err != nil {
 		return models.Comment{}, fmt.Errorf("GetCommentByID error: %w", err)
 	}
 	return comment, nil

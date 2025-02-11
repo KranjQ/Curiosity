@@ -5,7 +5,6 @@ import (
 	"curiosity/internal/models"
 	"database/sql"
 	"fmt"
-	"log"
 )
 
 type UserRepository struct {
@@ -20,12 +19,10 @@ func (repo *UserRepository) CreateUser(ctx context.Context, user models.User) (i
 	query := `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`
 
 	var id int
-	log.Print("start repo")
 	row := repo.DB.QueryRowContext(ctx, query, user.Username, user.Password)
 	if err := row.Scan(&id); err != nil {
 		return -1, fmt.Errorf("bad scan user id: %w", err)
 	}
-	log.Print("end repo")
 	return id, nil
 }
 
