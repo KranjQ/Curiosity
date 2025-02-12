@@ -67,7 +67,6 @@ func main() {
 	}
 
 	storageType := os.Getenv("STORAGE_TYPE")
-	log.Print(storageType)
 
 	var postRepo usecase.PostRepository
 	var commentRepo usecase.CommentRepository
@@ -81,12 +80,10 @@ func main() {
 		postRepo = inmemory.NewPostRepository(postCache)
 		commentRepo = inmemory.NewCommentRepository(commentCache)
 		userRepo = inmemory.NewUserRepository(userCache)
-		log.Print("memory")
 	case "PSQL":
 		postRepo = psql.NewPostRepository(db)
 		commentRepo = psql.NewCommentRepository(db)
 		userRepo = psql.NewUserRepository(db)
-		log.Print("PSQL")
 	}
 
 	postUseCase := usecase.NewPostUseCase(postRepo)

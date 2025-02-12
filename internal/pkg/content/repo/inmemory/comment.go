@@ -20,7 +20,6 @@ type CommentCache interface {
 }
 
 type CommentRepository struct {
-	//comments map[int]models.Comment
 	mu      *sync.RWMutex
 	cache   CommentCache
 	counter int
@@ -28,7 +27,6 @@ type CommentRepository struct {
 
 func NewCommentRepository(cc CommentCache) *CommentRepository {
 	return &CommentRepository{
-		//comments: make(map[int]models.Comment),
 		cache:   cc,
 		mu:      &sync.RWMutex{},
 		counter: 0,
@@ -40,8 +38,8 @@ func (repo *CommentRepository) CreateComment(ctx context.Context, comment models
 	repo.mu.Lock()
 	repo.counter += 1
 	comment.ID = repo.counter
+	repo.mu.Unlock()
 	comment.CreatedAt = time.Now()
-	//repo.comments[comment.ID] = comment
 	repo.cache.Set(comment.ID, comment)
 	var intSlice []int
 	if comment.Path != "" {
@@ -56,20 +54,17 @@ func (repo *CommentRepository) CreateComment(ctx context.Context, comment models
 	}
 
 	for _, val := range intSlice {
-		//temp := repo.comments[val]
 		temp, _ := repo.cache.Get(val)
 		temp.Replies += 1
-		//repo.comments[val] = temp
 		repo.cache.Set(val, temp)
 	}
-	repo.mu.Unlock()
+
 	return nil
 }
 
 func (repo *CommentRepository) GetCommentByID(ctx context.Context, commentID int) (models.Comment, error) {
 	_ = ctx
 	repo.mu.RLock()
-	//comment, exists := repo.comments[commentID]
 	comment, exists := repo.cache.Get(commentID)
 	if !exists {
 		return models.Comment{}, errors.New("comment doesn't exist")

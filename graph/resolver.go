@@ -15,7 +15,6 @@ import (
 type CommentUseCase interface {
 	CreateComment(ctx context.Context, comment models.Comment) error
 	GetCommentByID(ctx context.Context, id int) (models.Comment, error)
-	//GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]*models.Node, error)
 	GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]models.Comment, error)
 	GetRepliesByCommentID(ctx context.Context, commentID int) ([]models.Comment, error)
 }
