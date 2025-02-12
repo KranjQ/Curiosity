@@ -47,6 +47,7 @@ type Post struct {
 	Title         string `json:"title"`
 	Content       string `json:"content"`
 	IsCommentable bool   `json:"is_commentable"`
+	CreatedAt     string `json:"created_at"`
 }
 
 type Query struct {

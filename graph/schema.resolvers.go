@@ -13,7 +13,8 @@ import (
 )
 
 // CreatePost is the resolver for the createPost field.
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) (*model.Post, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) (int32, error) {
+	var status int32
 	post := models.Post{
 		Title:         input.Title,
 		Content:       input.Content,
@@ -21,13 +22,16 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) 
 		IsCommentable: input.IsCommentable,
 	}
 	if err := r.postUseCase.CreatePost(ctx, post); err != nil {
-		return nil, fmt.Errorf("CreatePost error: %w", err)
+		status = -1
+		return status, fmt.Errorf("CreatePost error: %w", err)
 	}
-	return nil, nil
+	status = 1
+	return status, nil
 }
 
 // CreateComment is the resolver for the createComment field.
-func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*model.Comment, error) {
+func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (int32, error) {
+	var status int32
 	comment := models.Comment{
 		Message: input.Message,
 		Post:    int(input.Post),
@@ -35,9 +39,11 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 		Author:  int(input.Author),
 	}
 	if err := r.commentUseCase.CreateComment(ctx, comment); err != nil {
-		return nil, fmt.Errorf("Create Comment error: %w", err)
+		status = -1
+		return status, fmt.Errorf("Create Comment error: %w", err)
 	}
-	return nil, nil
+	status = 1
+	return status, nil
 }
 
 // SignUp is the resolver for the signUp field.

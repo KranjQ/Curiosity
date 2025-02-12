@@ -74,6 +74,7 @@ type ComplexityRoot struct {
 	Post struct {
 		Author        func(childComplexity int) int
 		Content       func(childComplexity int) int
+		CreatedAt     func(childComplexity int) int
 		ID            func(childComplexity int) int
 		IsCommentable func(childComplexity int) int
 		Title         func(childComplexity int) int
@@ -93,8 +94,8 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreatePost(ctx context.Context, input model.NewPost) (*model.Post, error)
-	CreateComment(ctx context.Context, input model.NewComment) (*model.Comment, error)
+	CreatePost(ctx context.Context, input model.NewPost) (int32, error)
+	CreateComment(ctx context.Context, input model.NewComment) (int32, error)
 	SignUp(ctx context.Context, input model.NewUser) (int32, error)
 	SignIn(ctx context.Context, input model.NewUser) (int32, error)
 }
@@ -261,6 +262,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Post.Content(childComplexity), true
+
+	case "Post.created_at":
+		if e.complexity.Post.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Post.CreatedAt(childComplexity), true
 
 	case "Post.id":
 		if e.complexity.Post.ID == nil {
@@ -1290,11 +1298,14 @@ func (ec *executionContext) _Mutation_createPost(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Post)
+	res := resTmp.(int32)
 	fc.Result = res
-	return ec.marshalOPost2ᚖcuriosityᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createPost(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1304,19 +1315,7 @@ func (ec *executionContext) fieldContext_Mutation_createPost(ctx context.Context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Post_id(ctx, field)
-			case "author":
-				return ec.fieldContext_Post_author(ctx, field)
-			case "title":
-				return ec.fieldContext_Post_title(ctx, field)
-			case "content":
-				return ec.fieldContext_Post_content(ctx, field)
-			case "is_commentable":
-				return ec.fieldContext_Post_is_commentable(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	defer func() {
@@ -1359,9 +1358,9 @@ func (ec *executionContext) _Mutation_createComment(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Comment)
+	res := resTmp.(int32)
 	fc.Result = res
-	return ec.marshalNComment2ᚖcuriosityᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createComment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1371,27 +1370,7 @@ func (ec *executionContext) fieldContext_Mutation_createComment(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Comment_id(ctx, field)
-			case "author":
-				return ec.fieldContext_Comment_author(ctx, field)
-			case "message":
-				return ec.fieldContext_Comment_message(ctx, field)
-			case "post":
-				return ec.fieldContext_Comment_post(ctx, field)
-			case "parent":
-				return ec.fieldContext_Comment_parent(ctx, field)
-			case "depth":
-				return ec.fieldContext_Comment_depth(ctx, field)
-			case "path":
-				return ec.fieldContext_Comment_path(ctx, field)
-			case "replies":
-				return ec.fieldContext_Comment_replies(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Comment_created_at(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	defer func() {
@@ -1738,6 +1717,50 @@ func (ec *executionContext) fieldContext_Post_is_commentable(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Post_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Post_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Post_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_posts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_posts(ctx, field)
 	if err != nil {
@@ -1787,6 +1810,8 @@ func (ec *executionContext) fieldContext_Query_posts(_ context.Context, field gr
 				return ec.fieldContext_Post_content(ctx, field)
 			case "is_commentable":
 				return ec.fieldContext_Post_is_commentable(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Post_created_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -4442,6 +4467,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createPost(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createComment":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createComment(ctx, field)
@@ -4519,6 +4547,11 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "is_commentable":
 			out.Values[i] = ec._Post_is_commentable(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "created_at":
+			out.Values[i] = ec._Post_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5060,10 +5093,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNComment2curiosityᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v model.Comment) graphql.Marshaler {
-	return ec._Comment(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNComment2ᚕᚖcuriosityᚋgraphᚋmodelᚐCommentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Comment) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -5548,13 +5577,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOPost2ᚖcuriosityᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *model.Post) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Post(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {

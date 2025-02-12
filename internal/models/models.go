@@ -3,12 +3,12 @@ package models
 import "time"
 
 type Post struct {
-	ID            int
-	Title         string
-	Content       string
-	Author        int
-	IsCommentable bool
-	CreatedAt     time.Time
+	ID            int       `json:"id"`
+	Title         string    `json:"title"`
+	Content       string    `json:"content"`
+	Author        int       `json:"author"`
+	IsCommentable bool      `json:"is_commentable"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type Comment struct {

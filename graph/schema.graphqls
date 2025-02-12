@@ -4,6 +4,7 @@ type Post {
     title: String!
     content: String!
     is_commentable: Boolean!
+    created_at: String!
 }
 
 type Comment {
@@ -54,8 +55,8 @@ type Query {
 }
 
 type Mutation {
-    createPost(input: NewPost!): Post
-    createComment(input: NewComment!): Comment!
+    createPost(input: NewPost!): Int!
+    createComment(input: NewComment!): Int!
     signUp(input: NewUser!): Int!
     signIn(input: NewUser!): Int!
 }

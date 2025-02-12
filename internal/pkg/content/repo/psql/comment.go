@@ -50,7 +50,8 @@ func (repo *CommentRepository) CreateComment(ctx context.Context, comment models
 
 func (repo *CommentRepository) GetCommentByID(ctx context.Context, id int) (models.Comment, error) {
 	var comment models.Comment
-	query := "SELECT id, author, message, post, parent, depth, path, replies, created_at FROM comments WHERE id = $1"
+	query := `SELECT id, author, message, post, parent, depth, path, replies, created_at 
+			  FROM comments WHERE id = $1`
 	row := repo.DB.QueryRowContext(ctx, query, id)
 	if err := row.Scan(&comment.ID, &comment.Author, &comment.Message, &comment.Post, &comment.Parent,
 		&comment.Depth, &comment.Path, &comment.Replies, &comment.CreatedAt); err != nil {
@@ -62,7 +63,7 @@ func (repo *CommentRepository) GetCommentByID(ctx context.Context, id int) (mode
 func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID int, limit int, offset int) ([]models.Comment, error) {
 	var comments []models.Comment
 	query := `SELECT id, author, message, post, parent, depth, path, replies, created_at 
-FROM comments WHERE post = $1 AND parent = -1 LIMIT $2 OFFSET $3`
+FROM comments WHERE post = $1 AND parent = -1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 	rows, err := repo.DB.QueryContext(ctx, query, postID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("bad GetCommentsByPostID: %w", err)
@@ -82,7 +83,7 @@ FROM comments WHERE post = $1 AND parent = -1 LIMIT $2 OFFSET $3`
 func (repo *CommentRepository) GetRepliesByCommentID(ctx context.Context, commentID int) ([]models.Comment, error) {
 	var comments []models.Comment
 	query := `SELECT id, author, message, post, parent, depth, path, replies, created_at
-              FROM comments WHERE parent = $1`
+              FROM comments WHERE parent = $1 ORDER BY created_at DESC`
 	rows, err := repo.DB.QueryContext(ctx, query, commentID)
 	if err != nil {
 		return nil, fmt.Errorf("bad GetCommentsByPostID: %w", err)

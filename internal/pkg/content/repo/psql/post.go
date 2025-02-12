@@ -27,7 +27,7 @@ func (repo *PostRepository) CreatePost(ctx context.Context, post models.Post) er
 }
 
 func (repo *PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
-	query := "SELECT id, title, content, author, is_commentable, created_at FROM posts"
+	query := "SELECT id, title, content, author, is_commentable, created_at FROM posts ORDER BY created_at DESC"
 
 	rows, err := repo.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -50,7 +50,8 @@ func (repo *PostRepository) GetPosts(ctx context.Context) ([]models.Post, error)
 
 func (repo *PostRepository) GetPostByID(ctx context.Context, postID int) (models.Post, error) {
 	var post models.Post
-	query := "SELECT id, title, content, author, is_commentable, created_at  FROM posts WHERE id = $1"
+	query := `SELECT id, title, content, author, is_commentable, created_at  
+			  FROM posts WHERE id = $1`
 	row := repo.DB.QueryRowContext(ctx, query, postID)
 	err := row.Scan(&post.ID, &post.Title, &post.Content, &post.Author, &post.IsCommentable, &post.CreatedAt)
 	if err != nil {

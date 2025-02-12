@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination=./mocks/mock_commentCache.go -package=mocks . CommentCache
 type CommentCache interface {
 	Get(key int) (models.Comment, bool)
 	Set(key int, value models.Comment)
@@ -82,10 +83,10 @@ func (repo *CommentRepository) GetCommentsByPostID(ctx context.Context, postID i
 
 	comments := repo.cache.GetAll()
 	slices.SortFunc(comments, func(a, b models.Comment) int {
-		if a.CreatedAt.Before(b.CreatedAt) {
+		if a.CreatedAt.After(b.CreatedAt) {
 			return -1
 		}
-		if a.CreatedAt.After(b.CreatedAt) {
+		if a.CreatedAt.Before(b.CreatedAt) {
 			return 1
 		}
 		return 0
@@ -113,6 +114,15 @@ func (repo *CommentRepository) GetRepliesByCommentID(ctx context.Context, commen
 	var replies []models.Comment
 
 	comments := repo.cache.GetAll()
+	slices.SortFunc(comments, func(a, b models.Comment) int {
+		if a.CreatedAt.After(b.CreatedAt) {
+			return -1
+		}
+		if a.CreatedAt.Before(b.CreatedAt) {
+			return 1
+		}
+		return 0
+	})
 	for _, value := range comments {
 		if value.Parent == commentID {
 			replies = append(replies, value)
